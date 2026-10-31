@@ -800,6 +800,156 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Part E - LabTest",
+      "description": "Run top to bottom: E1 writes a lab test on Diane's ATTENDED consultation, E2 finds it, and E3 deletes it again, so the folder leaves the data as it was.",
+      "item": [
+        {
+          "name": "E1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/lab-tests/save?consultationId={{attendedConsultationId}}",
+            "description": "E1: the consultation is ATTENDED: 201 \"Lab test saved successfully\". The service sets orderedDate to today and links the consultation.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testName\": \"Lipid profile\",\n  \"findings\": \"Within normal range\",\n  \"turnaroundHours\": 24\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E1 - consultation does not exist (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/lab-tests/save?consultationId=00000000-0000-0000-0000-000000000000",
+            "description": "E1: 404 \"The consultation with that id does not exist\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testName\": \"Full blood count\",\n  \"findings\": \"Within normal range\",\n  \"turnaroundHours\": 24\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E1 - consultation not ATTENDED (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/lab-tests/save?consultationId={{bookedConsultationId}}",
+            "description": "E1: the consultation is BOOKED: 400 \"Lab tests are only for ATTENDED consultations\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testName\": \"Full blood count\",\n  \"findings\": \"Within normal range\",\n  \"turnaroundHours\": 24\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "E2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lab-tests/outpatient/{{nationalId}}",
+            "description": "E2: d.consultation.outpatient.nationalId = :nationalId ORDER BY d.orderedDate DESC. Grace Uwase's four lab tests across her two ATTENDED consultations."
+          },
+          "response": []
+        },
+        {
+          "name": "E2 - Diane, with the new lab test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lab-tests/outpatient/{{otherNationalId}}",
+            "description": "E2: Diane's lab tests, including the one E1 just wrote. The test script stores its id in newLabTestId for E3."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const made = pm.response.json().find(c => c.testName === 'Lipid profile');",
+                  "if (made) { pm.collectionVariables.set('newLabTestId', made.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E2 - outpatient with no lab tests",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lab-tests/outpatient/1200170056789012",
+            "description": "E2: Kevin Ishimwe has none: 200 with an empty list []."
+          },
+          "response": []
+        },
+        {
+          "name": "E3",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/lab-tests/delete/{{newLabTestId}}",
+            "description": "E3: deletes the lab test written by E1: 200 \"Lab test deleted successfully\"."
+          },
+          "response": []
+        },
+        {
+          "name": "E3 - lab test does not exist (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/lab-tests/delete/{{newLabTestId}}",
+            "description": "E3: the same id again: 404 \"The lab test with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "E3 - consultation has lab tests (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/delete/{{attendedConsultationId}}",
+            "description": "E3: existsByConsultation is true: 409 \"That consultation has lab tests, delete them first\"."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -826,6 +976,10 @@
     {
       "key": "nationalId",
       "value": "1199880012345678"
+    },
+    {
+      "key": "otherNationalId",
+      "value": "1200080023456789"
     },
     {
       "key": "medicalFieldId",
@@ -857,6 +1011,10 @@
     },
     {
       "key": "newConsultationId",
+      "value": ""
+    },
+    {
+      "key": "newLabTestId",
       "value": ""
     }
   ]
