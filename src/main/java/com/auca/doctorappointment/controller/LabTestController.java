@@ -35,4 +35,15 @@ public class LabTestController {
     public ResponseEntity<List<LabTest>> getByOutpatient(@PathVariable String nationalId) {
         return new ResponseEntity<>(labTestService.getByOutpatient(nationalId), HttpStatus.OK);
     }
+
+    // E3: DELETE /api/lab-tests/delete/{id}
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> delete(@PathVariable UUID id) {
+        String message = labTestService.delete(id);
+        if (message.equals("The lab test with that id does not exist")) {
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        }
+    }
 }

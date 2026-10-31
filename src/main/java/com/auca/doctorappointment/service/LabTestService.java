@@ -44,4 +44,14 @@ public class LabTestService {
     public List<LabTest> getByOutpatient(String nationalId) {
         return labTestRepository.findByOutpatientNationalId(nationalId);
     }
+
+    // E3
+    public String delete(UUID id) {
+        Optional<LabTest> labTest = labTestRepository.findById(id);
+        if (labTest.isEmpty()) {
+            return "The lab test with that id does not exist";
+        }
+        labTestRepository.delete(labTest.get());
+        return "Lab test deleted successfully";
+    }
 }
