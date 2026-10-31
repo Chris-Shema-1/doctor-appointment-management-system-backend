@@ -26,6 +26,11 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
     boolean existsByPhysicianAndConsultDateAndStatusNot(Physician physician, LocalDate consultDate,
             ConsultationStatus status);
 
+    // Bonus dashboard: derived counts
+    long countByConsultDate(LocalDate consultDate);
+
+    long countByStatus(ConsultationStatus status);
+
     // F1: one row per status with its count, e.g. ["BOOKED", 4]; a status with no consultations has no group, so no row
     @Query("SELECT c.status, COUNT(c) FROM Consultation c GROUP BY c.status")
     List<Object[]> countPerStatus();
