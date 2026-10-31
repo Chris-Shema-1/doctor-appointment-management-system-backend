@@ -74,6 +74,11 @@ public class ConsultationService {
         return consultationRepository.findByConsultDateBetweenOrderByConsultDateAsc(start, end);
     }
 
+    // F1
+    public List<Object[]> getStatsByStatus() {
+        return consultationRepository.countPerStatus();
+    }
+
     // D2: BOOKED -> CHECKED_IN or CANCELLED, CHECKED_IN -> ATTENDED or CANCELLED; ATTENDED and CANCELLED are final
     public String changeStatus(UUID id, ConsultationStatus newStatus) {
         Optional<Consultation> consultation = consultationRepository.findById(id);

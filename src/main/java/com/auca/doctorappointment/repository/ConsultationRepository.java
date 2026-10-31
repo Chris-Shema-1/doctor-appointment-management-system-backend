@@ -4,6 +4,7 @@ import com.auca.doctorappointment.entity.Consultation;
 import com.auca.doctorappointment.entity.ConsultationStatus;
 import com.auca.doctorappointment.entity.Physician;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -22,4 +23,8 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
     // D1: does the physician already have a consultation on that date whose status is not the given one (CANCELLED)?
     boolean existsByPhysicianAndConsultDateAndStatusNot(Physician physician, LocalDate consultDate,
             ConsultationStatus status);
+
+    // F1: one row per status with its count, e.g. ["BOOKED", 4]; a status with no consultations has no group, so no row
+    @Query("SELECT c.status, COUNT(c) FROM Consultation c GROUP BY c.status")
+    List<Object[]> countPerStatus();
 }

@@ -53,6 +53,12 @@ public class ConsultationController {
                 HttpStatus.OK);
     }
 
+    // F1: GET /api/consultations/stats/by-status
+    @GetMapping("/stats/by-status")
+    public ResponseEntity<List<Object[]>> getStatsByStatus() {
+        return new ResponseEntity<>(consultationService.getStatsByStatus(), HttpStatus.OK);
+    }
+
     // D2: PATCH /api/consultations/{id}/status?status=CHECKED_IN
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> changeStatus(@PathVariable UUID id, @RequestParam ConsultationStatus status) {
