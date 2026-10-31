@@ -950,6 +950,108 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Part F - reports and bulk updates",
+      "description": "F1 changes nothing. F2 books a test consultation for Habimana on 2026-12-16, cancels his day, and deletes the test consultation again, so it can be run many times. The last request is the paper's own example on the seed data; it can only be run once, because CANCELLED is final.",
+      "item": [
+        {
+          "name": "F1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/stats/by-status",
+            "description": "F1: SELECT c.status, COUNT(c) FROM Consultation c GROUP BY c.status. With the seed data: [[\"CHECKED_IN\",1],[\"ATTENDED\",3],[\"CANCELLED\",2],[\"BOOKED\",4]] (row order may differ). A status with no consultations has no group, so it does not appear."
+          },
+          "response": []
+        },
+        {
+          "name": "F2 - setup: book a consultation for Habimana",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "Setup for F2: 201. Habimana now has a BOOKED consultation on 2026-12-16.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-12-16\",\n  \"complaint\": \"Postman F2 test\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{otherPhysicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "F2",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/cancel-day?physicianId={{otherPhysicianId}}&date=2026-12-16",
+            "description": "F2: one @Modifying UPDATE, no Java loop: 200 \"1 consultations cancelled\". ATTENDED consultations are never touched."
+          },
+          "response": []
+        },
+        {
+          "name": "F2 - nothing left to cancel",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/cancel-day?physicianId={{otherPhysicianId}}&date=2026-12-16",
+            "description": "F2: the same call again: 200 \"0 consultations cancelled\" (the real number of rows changed)."
+          },
+          "response": []
+        },
+        {
+          "name": "F2 - find the test consultation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/by-status?status=CANCELLED",
+            "description": "The F2 test consultation is now CANCELLED. The test script stores its id in newConsultationId."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const made = pm.response.json().find(c => c.complaint === 'Postman F2 test');",
+                  "if (made) { pm.collectionVariables.set('newConsultationId', made.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F2 - clean up the test consultation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/delete/{{newConsultationId}}",
+            "description": "Removes the F2 test consultation: 200."
+          },
+          "response": []
+        },
+        {
+          "name": "F2 - paper example on the seed data (run once)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/cancel-day?physicianId={{physicianId}}&date=2026-10-20",
+            "description": "F2 with the seed data: Mugisha has two consultations on 2026-10-20, one already CANCELLED, so the answer is \"1 consultations cancelled\". This changes the seed data for good (Grace's BOOKED consultation becomes CANCELLED); keep it for the live demo."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
