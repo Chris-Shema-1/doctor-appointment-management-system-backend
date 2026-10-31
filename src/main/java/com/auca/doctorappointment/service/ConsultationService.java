@@ -9,6 +9,8 @@ import com.auca.doctorappointment.repository.LabTestRepository;
 import com.auca.doctorappointment.repository.OutpatientRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,6 +75,11 @@ public class ConsultationService {
     // B3: the controller has already turned the Strings into LocalDate
     public List<Consultation> getBetween(LocalDate start, LocalDate end) {
         return consultationRepository.findByConsultDateBetweenOrderByConsultDateAsc(start, end);
+    }
+
+    // Bonus: one page of consultations; the controller builds the Pageable
+    public Page<Consultation> getPage(Pageable pageable) {
+        return consultationRepository.findAll(pageable);
     }
 
     // F1
