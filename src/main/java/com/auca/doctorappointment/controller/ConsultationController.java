@@ -53,6 +53,19 @@ public class ConsultationController {
                 HttpStatus.OK);
     }
 
+    // D2: PATCH /api/consultations/{id}/status?status=CHECKED_IN
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> changeStatus(@PathVariable UUID id, @RequestParam ConsultationStatus status) {
+        String message = consultationService.changeStatus(id, status);
+        if (message.equals("The consultation with that id does not exist")) {
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.startsWith("Cannot change status from")) {
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<Consultation> consultation = consultationService.getById(id);

@@ -70,6 +70,28 @@ public class ConsultationService {
         return consultationRepository.findByConsultDateBetweenOrderByConsultDateAsc(start, end);
     }
 
+    // D2: BOOKED -> CHECKED_IN or CANCELLED, CHECKED_IN -> ATTENDED or CANCELLED; ATTENDED and CANCELLED are final
+    public String changeStatus(UUID id, ConsultationStatus newStatus) {
+        Optional<Consultation> consultation = consultationRepository.findById(id);
+        if (consultation.isEmpty()) {
+            return "The consultation with that id does not exist";
+        }
+
+        ConsultationStatus current = consultation.get().getStatus();
+        boolean allowed =
+                (current == ConsultationStatus.BOOKED
+                        && (newStatus == ConsultationStatus.CHECKED_IN || newStatus == ConsultationStatus.CANCELLED))
+                || (current == ConsultationStatus.CHECKED_IN
+                        && (newStatus == ConsultationStatus.ATTENDED || newStatus == ConsultationStatus.CANCELLED));
+        if (!allowed) {
+            return "Cannot change status from " + current + " to " + newStatus;
+        }
+
+        consultation.get().setStatus(newStatus);
+        consultationRepository.save(consultation.get());
+        return "Consultation status updated successfully";
+    }
+
     public String update(UUID id, Consultation newData) {
         Optional<Consultation> consultation = consultationRepository.findById(id);
         if (consultation.isEmpty()) {
