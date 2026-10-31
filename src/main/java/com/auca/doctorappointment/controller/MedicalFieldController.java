@@ -59,6 +59,8 @@ public class MedicalFieldController {
         String message = medicalFieldService.delete(id);
         if (message.equals("The medical field with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That medical field is held by a physician, remove it from the physician first")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.OK);
         }

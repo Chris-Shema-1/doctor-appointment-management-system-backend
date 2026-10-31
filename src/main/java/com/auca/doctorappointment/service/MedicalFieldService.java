@@ -4,6 +4,7 @@ import com.auca.doctorappointment.entity.MedicalField;
 import com.auca.doctorappointment.repository.MedicalFieldRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,10 +46,16 @@ public class MedicalFieldService {
         return "Medical field updated successfully";
     }
 
+    // the physicians list is read inside the transaction, so it can be loaded
+    @Transactional
     public String delete(UUID id) {
         Optional<MedicalField> medicalField = medicalFieldRepository.findById(id);
         if (medicalField.isEmpty()) {
             return "The medical field with that id does not exist";
+        }
+        // a field still held by a physician has rows in physician_medical_field; deleting it would fail
+        if (!medicalField.get().getPhysicians().isEmpty()) {
+            return "That medical field is held by a physician, remove it from the physician first";
         }
         medicalFieldRepository.delete(medicalField.get());
         return "Medical field deleted successfully";
