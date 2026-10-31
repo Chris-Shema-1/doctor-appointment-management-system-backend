@@ -103,7 +103,7 @@ public class ConsultationService {
         }
         consultation.get().setConsultDate(newData.getConsultDate());
         consultation.get().setComplaint(newData.getComplaint());
-        consultation.get().setStatus(newData.getStatus());
+        // D2: the status is not copied here; it only changes through PATCH /{id}/status
         consultationRepository.save(consultation.get());
         return "Consultation updated successfully";
     }
