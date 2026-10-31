@@ -1,6 +1,7 @@
 package com.auca.doctorappointment.service;
 
 import com.auca.doctorappointment.entity.Outpatient;
+import com.auca.doctorappointment.repository.ConsultationRepository;
 import com.auca.doctorappointment.repository.OutpatientRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ public class OutpatientService {
 
     @Autowired
     private PhysicianRepository physicianRepository;
+
+    @Autowired
+    private ConsultationRepository consultationRepository;
 
     public String save(Outpatient outpatient) {
         outpatient.setId(null);
@@ -65,6 +69,10 @@ public class OutpatientService {
         Optional<Outpatient> outpatient = outpatientRepository.findById(id);
         if (outpatient.isEmpty()) {
             return "The outpatient with that id does not exist";
+        }
+        // consultation.outpatient_id still points at this outpatient; deleting would fail
+        if (consultationRepository.existsByOutpatient(outpatient.get())) {
+            return "That outpatient has consultations, delete them first";
         }
         outpatientRepository.delete(outpatient.get());
         return "Outpatient deleted successfully";

@@ -70,6 +70,8 @@ public class OutpatientController {
         String message = outpatientService.delete(id);
         if (message.equals("The outpatient with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That outpatient has consultations, delete them first")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.OK);
         }

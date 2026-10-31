@@ -2,6 +2,7 @@ package com.auca.doctorappointment.repository;
 
 import com.auca.doctorappointment.entity.Consultation;
 import com.auca.doctorappointment.entity.ConsultationStatus;
+import com.auca.doctorappointment.entity.Outpatient;
 import com.auca.doctorappointment.entity.Physician;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,6 +29,9 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
 
     // safe delete of a physician: does any consultation still point at this physician?
     boolean existsByPhysician(Physician physician);
+
+    // safe delete of an outpatient: does any consultation still point at this outpatient?
+    boolean existsByOutpatient(Outpatient outpatient);
 
     // Bonus dashboard: derived counts
     long countByConsultDate(LocalDate consultDate);
