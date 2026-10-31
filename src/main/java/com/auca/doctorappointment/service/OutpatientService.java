@@ -2,6 +2,7 @@ package com.auca.doctorappointment.service;
 
 import com.auca.doctorappointment.entity.Outpatient;
 import com.auca.doctorappointment.repository.OutpatientRepository;
+import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ public class OutpatientService {
 
     @Autowired
     private OutpatientRepository outpatientRepository;
+
+    @Autowired
+    private PhysicianRepository physicianRepository;
 
     public String save(Outpatient outpatient) {
         outpatient.setId(null);
@@ -33,6 +37,14 @@ public class OutpatientService {
     // B1: empty list when nobody matches
     public List<Outpatient> getByLastName(String lastName) {
         return outpatientRepository.findByLastNameIgnoreCaseOrderByFirstNameAsc(lastName);
+    }
+
+    // C4: Optional.empty() means the physician does not exist
+    public Optional<List<Outpatient>> getOfPhysician(UUID physicianId) {
+        if (!physicianRepository.existsById(physicianId)) {
+            return Optional.empty();
+        }
+        return Optional.of(outpatientRepository.findByPhysicianId(physicianId));
     }
 
     public String update(UUID id, Outpatient newData) {

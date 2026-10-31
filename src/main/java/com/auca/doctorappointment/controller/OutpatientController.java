@@ -34,6 +34,17 @@ public class OutpatientController {
         return new ResponseEntity<>(outpatientService.getByLastName(lastName), HttpStatus.OK);
     }
 
+    // C4: GET /api/outpatients/of-physician/{physicianId}
+    @GetMapping("/of-physician/{physicianId}")
+    public ResponseEntity<?> getOfPhysician(@PathVariable UUID physicianId) {
+        Optional<List<Outpatient>> outpatients = outpatientService.getOfPhysician(physicianId);
+        if (outpatients.isEmpty()) {
+            return new ResponseEntity<>("The physician with that id does not exist", HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(outpatients.get(), HttpStatus.OK);
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<Outpatient> outpatient = outpatientService.getById(id);

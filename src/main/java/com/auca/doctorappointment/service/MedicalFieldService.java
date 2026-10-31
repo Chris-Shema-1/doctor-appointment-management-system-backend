@@ -30,6 +30,11 @@ public class MedicalFieldService {
         return medicalFieldRepository.findById(id);
     }
 
+    // C3
+    public List<MedicalField> getUnused() {
+        return medicalFieldRepository.findUnused();
+    }
+
     public String update(UUID id, MedicalField newData) {
         Optional<MedicalField> medicalField = medicalFieldRepository.findById(id);
         if (medicalField.isEmpty()) {

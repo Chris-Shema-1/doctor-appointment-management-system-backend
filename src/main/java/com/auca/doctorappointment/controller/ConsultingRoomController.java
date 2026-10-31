@@ -28,6 +28,12 @@ public class ConsultingRoomController {
         return new ResponseEntity<>(consultingRoomService.getAll(), HttpStatus.OK);
     }
 
+    // C2: GET /api/consulting-rooms/free
+    @GetMapping("/free")
+    public ResponseEntity<List<ConsultingRoom>> getFreeRooms() {
+        return new ResponseEntity<>(consultingRoomService.getFreeRooms(), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<ConsultingRoom> consultingRoom = consultingRoomService.getById(id);

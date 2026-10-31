@@ -30,6 +30,11 @@ public class ConsultingRoomService {
         return consultingRoomRepository.findById(id);
     }
 
+    // C2
+    public List<ConsultingRoom> getFreeRooms() {
+        return consultingRoomRepository.findFreeRooms();
+    }
+
     public String update(UUID id, ConsultingRoom newData) {
         Optional<ConsultingRoom> consultingRoom = consultingRoomRepository.findById(id);
         if (consultingRoom.isEmpty()) {

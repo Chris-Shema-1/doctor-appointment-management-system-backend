@@ -46,6 +46,11 @@ public class PhysicianService {
         return physicianRepository.findById(id);
     }
 
+    // C1
+    public List<Physician> getByMedicalField(String name) {
+        return physicianRepository.findByMedicalFieldName(name);
+    }
+
     public String update(UUID id, Physician newData) {
         Optional<Physician> physician = physicianRepository.findById(id);
         if (physician.isEmpty()) {

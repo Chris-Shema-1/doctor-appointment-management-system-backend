@@ -34,6 +34,12 @@ public class PhysicianController {
         return new ResponseEntity<>(physicianService.getAll(), HttpStatus.OK);
     }
 
+    // C1: GET /api/physicians/by-medical-field?name=cardiology
+    @GetMapping("/by-medical-field")
+    public ResponseEntity<List<Physician>> getByMedicalField(@RequestParam String name) {
+        return new ResponseEntity<>(physicianService.getByMedicalField(name), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<Physician> physician = physicianService.getById(id);

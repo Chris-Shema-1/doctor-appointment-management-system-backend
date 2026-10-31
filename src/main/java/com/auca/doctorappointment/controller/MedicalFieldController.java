@@ -28,6 +28,12 @@ public class MedicalFieldController {
         return new ResponseEntity<>(medicalFieldService.getAll(), HttpStatus.OK);
     }
 
+    // C3: GET /api/medical-fields/unused
+    @GetMapping("/unused")
+    public ResponseEntity<List<MedicalField>> getUnused() {
+        return new ResponseEntity<>(medicalFieldService.getUnused(), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<MedicalField> medicalField = medicalFieldService.getById(id);
