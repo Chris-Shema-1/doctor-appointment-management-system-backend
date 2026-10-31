@@ -2,6 +2,7 @@ package com.auca.doctorappointment.service;
 
 import com.auca.doctorappointment.entity.ConsultingRoom;
 import com.auca.doctorappointment.repository.ConsultingRoomRepository;
+import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,9 @@ public class ConsultingRoomService {
 
     @Autowired
     private ConsultingRoomRepository consultingRoomRepository;
+
+    @Autowired
+    private PhysicianRepository physicianRepository;
 
     public String save(ConsultingRoom consultingRoom) {
         consultingRoom.setId(null);
@@ -50,6 +54,10 @@ public class ConsultingRoomService {
         Optional<ConsultingRoom> consultingRoom = consultingRoomRepository.findById(id);
         if (consultingRoom.isEmpty()) {
             return "The consulting room with that id does not exist";
+        }
+        // a physician's consulting_room_id still points at this room; deleting it would fail (reuses D4's method)
+        if (physicianRepository.existsByConsultingRoom(consultingRoom.get())) {
+            return "That consulting room is taken by a physician, move the physician first";
         }
         consultingRoomRepository.delete(consultingRoom.get());
         return "Consulting room deleted successfully";

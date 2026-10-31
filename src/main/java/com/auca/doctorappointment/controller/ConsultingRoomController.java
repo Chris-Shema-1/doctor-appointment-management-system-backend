@@ -59,6 +59,8 @@ public class ConsultingRoomController {
         String message = consultingRoomService.delete(id);
         if (message.equals("The consulting room with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That consulting room is taken by a physician, move the physician first")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.OK);
         }
