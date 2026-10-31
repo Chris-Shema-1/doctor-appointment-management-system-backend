@@ -26,6 +26,9 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
     boolean existsByPhysicianAndConsultDateAndStatusNot(Physician physician, LocalDate consultDate,
             ConsultationStatus status);
 
+    // safe delete of a physician: does any consultation still point at this physician?
+    boolean existsByPhysician(Physician physician);
+
     // Bonus dashboard: derived counts
     long countByConsultDate(LocalDate consultDate);
 

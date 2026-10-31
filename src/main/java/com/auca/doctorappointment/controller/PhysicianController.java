@@ -95,6 +95,8 @@ public class PhysicianController {
         String message = physicianService.delete(id);
         if (message.equals("The physician with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That physician has consultations, delete them first")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.OK);
         }

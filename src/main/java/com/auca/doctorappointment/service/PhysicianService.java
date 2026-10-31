@@ -3,6 +3,7 @@ package com.auca.doctorappointment.service;
 import com.auca.doctorappointment.entity.ConsultingRoom;
 import com.auca.doctorappointment.entity.MedicalField;
 import com.auca.doctorappointment.entity.Physician;
+import com.auca.doctorappointment.repository.ConsultationRepository;
 import com.auca.doctorappointment.repository.ConsultingRoomRepository;
 import com.auca.doctorappointment.repository.MedicalFieldRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
@@ -26,6 +27,9 @@ public class PhysicianService {
 
     @Autowired
     private MedicalFieldRepository medicalFieldRepository;
+
+    @Autowired
+    private ConsultationRepository consultationRepository;
 
     // body: {"firstName":..., "consultingRoom":{"id":"..."}, "medicalFields":[{"id":"..."}]}
     public String save(Physician physician) {
@@ -115,6 +119,11 @@ public class PhysicianService {
         Optional<Physician> physician = physicianRepository.findById(id);
         if (physician.isEmpty()) {
             return "The physician with that id does not exist";
+        }
+        // consultation.physician_id still points at this physician; deleting would fail.
+        // (the physician_medical_field rows are removed by Hibernate, because Physician owns that link)
+        if (consultationRepository.existsByPhysician(physician.get())) {
+            return "That physician has consultations, delete them first";
         }
         physicianRepository.delete(physician.get());
         return "Physician deleted successfully";
