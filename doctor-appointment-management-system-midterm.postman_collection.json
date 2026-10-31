@@ -406,6 +406,82 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Part C - JPQL with joins",
+      "description": "C1 to C4, all written with @Query.",
+      "item": [
+        {
+          "name": "C1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/by-medical-field?name=cardiology",
+            "description": "C1: JOIN p.medicalFields m WHERE LOWER(m.name) = LOWER(:name). Returns Jean Mugisha."
+          },
+          "response": []
+        },
+        {
+          "name": "C1 - other letter case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/by-medical-field?name=PEDIATRICS",
+            "description": "C1: Mugisha and Habimana; letter case does not matter."
+          },
+          "response": []
+        },
+        {
+          "name": "C1 - field nobody holds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/by-medical-field?name=orthopedics",
+            "description": "C1: 200 with an empty list []."
+          },
+          "response": []
+        },
+        {
+          "name": "C2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consulting-rooms/free",
+            "description": "C2: NOT EXISTS subquery, sorted by roomNumber. With the seed data: room 204 only."
+          },
+          "response": []
+        },
+        {
+          "name": "C3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/medical-fields/unused",
+            "description": "C3: m.physicians IS EMPTY (no counting). With the seed data: Orthopedics only."
+          },
+          "response": []
+        },
+        {
+          "name": "C4",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/of-physician/{{physicianId}}",
+            "description": "C4: SELECT DISTINCT c.outpatient ... WHERE c.physician.id = :physicianId. Mugisha's outpatients; Grace has two consultations with him but is listed once."
+          },
+          "response": []
+        },
+        {
+          "name": "C4 - physician does not exist (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/of-physician/00000000-0000-0000-0000-000000000000",
+            "description": "C4: 404 \"The physician with that id does not exist\"."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
