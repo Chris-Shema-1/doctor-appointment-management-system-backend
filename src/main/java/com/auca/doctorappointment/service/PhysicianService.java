@@ -88,6 +88,29 @@ public class PhysicianService {
         return "Medical field added to the physician";
     }
 
+    // D4: give the physician the room with that roomNumber; the old room becomes free (check with C2)
+    public String changeConsultingRoom(UUID physicianId, int roomNumber) {
+        Optional<Physician> physician = physicianRepository.findById(physicianId);
+        if (physician.isEmpty()) {
+            return "The physician with that id does not exist";
+        }
+        Optional<ConsultingRoom> room = consultingRoomRepository.findByRoomNumber(roomNumber);
+        if (room.isEmpty()) {
+            return "The consulting room with that roomNumber does not exist";
+        }
+
+        // taken only counts when someone else is in it; a physician asking for their own room is not blocked
+        ConsultingRoom current = physician.get().getConsultingRoom();
+        boolean alreadyMine = current != null && current.getId().equals(room.get().getId());
+        if (physicianRepository.existsByConsultingRoom(room.get()) && !alreadyMine) {
+            return "That consulting room is taken by another physician";
+        }
+
+        physician.get().setConsultingRoom(room.get());
+        physicianRepository.save(physician.get());
+        return "Consulting room changed successfully";
+    }
+
     public String delete(UUID id) {
         Optional<Physician> physician = physicianRepository.findById(id);
         if (physician.isEmpty()) {

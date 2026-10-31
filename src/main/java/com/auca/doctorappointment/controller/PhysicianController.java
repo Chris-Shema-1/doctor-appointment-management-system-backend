@@ -76,6 +76,20 @@ public class PhysicianController {
         }
     }
 
+    // D4: PATCH /api/physicians/{physicianId}/consulting-room?roomNumber=204
+    @PatchMapping("/{physicianId}/consulting-room")
+    public ResponseEntity<?> changeConsultingRoom(@PathVariable UUID physicianId, @RequestParam int roomNumber) {
+        String message = physicianService.changeConsultingRoom(physicianId, roomNumber);
+        if (message.equals("The physician with that id does not exist")
+                || message.equals("The consulting room with that roomNumber does not exist")) {
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That consulting room is taken by another physician")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
+        } else {
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        }
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         String message = physicianService.delete(id);
