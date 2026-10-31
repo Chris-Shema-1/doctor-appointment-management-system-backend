@@ -1,0 +1,375 @@
+{
+  "info": {
+    "name": "Doctor Appointment Management System - Midterm",
+    "description": "INSY 8322 mid-term - Shema Christian (26991). One request per requirement, named by its ID, plus failing cases (404, 400, 409). The id variables point at the seed data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Step 0 - seed data",
+      "description": "The seed data was entered once through these save endpoints (all returned 201). They are kept as a record of how it was done; running them again creates duplicates and changes the expected results of B, C and the dashboard. Consultations dated before today can no longer be saved, because of D1.",
+      "item": [
+        {
+          "name": "Seed - save medical field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/medical-fields/save",
+            "description": "Saved four times: Cardiology, Pediatrics, Dermatology, Orthopedics.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cardiology\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seed - save consulting room",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consulting-rooms/save",
+            "description": "Saved for rooms 201, 202, 203 and 204.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomNumber\": 201,\n  \"name\": \"Consulting Room 201\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seed - save physician",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/physicians/save",
+            "description": "Room and medical fields are sent by id. Jean Mugisha holds Cardiology and Pediatrics.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Mugisha\",\n  \"licenceNumber\": \"RMDC-1001\",\n  \"consultingRoom\": {\n    \"id\": \"{{consultingRoomId}}\"\n  },\n  \"medicalFields\": [\n    {\n      \"id\": \"{{medicalFieldId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seed - save outpatient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/outpatients/save",
+            "description": "Five outpatients; Grace and Diane share the lastName Uwase.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Grace\",\n  \"lastName\": \"Uwase\",\n  \"nationalId\": \"1199880012345678\",\n  \"phone\": \"0788123456\",\n  \"email\": \"grace.uwase@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seed - save consultation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "Ten consultations over October and November 2026, entered before D1 existed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-11-12\",\n  \"complaint\": \"Cardiology check-up\",\n  \"outpatient\": {\n    \"id\": \"{{outpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{physicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Part A - domain model and CRUD",
+      "description": "A1 entities and relationships, A2 CRUD for the five entities.",
+      "item": [
+        {
+          "name": "A1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/all",
+            "description": "A1: a physician shows its consulting room and medical fields. The medical fields do not list their physicians (@JsonIgnore on MedicalField.physicians), so the JSON does not loop."
+          },
+          "response": []
+        },
+        {
+          "name": "A1 - medical fields do not show physicians",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/medical-fields/all",
+            "description": "A1: only id and name; no physicians list."
+          },
+          "response": []
+        },
+        {
+          "name": "A2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "A2: 201 \"Consultation saved successfully\". The test script below is not needed for the demo; \"A2 - delete\" removes this consultation again.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-12-10\",\n  \"complaint\": \"Postman A2 test\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{otherPhysicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - get all",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/all",
+            "description": "A2: 200 with every consultation. The test script stores the id of the consultation made by \"A2\" in the variable newConsultationId, for \"A2 - delete\"."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const made = pm.response.json().find(c => c.complaint === 'Postman A2 test');",
+                  "if (made) { pm.collectionVariables.set('newConsultationId', made.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2 - get by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{bookedConsultationId}}",
+            "description": "A2: 200 with the consultation."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - get by id (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/00000000-0000-0000-0000-000000000000",
+            "description": "A2: 404 \"The consultation with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - update",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/update/{{bookedConsultationId}}",
+            "description": "A2: 200 \"Consultation updated successfully\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-11-12\",\n  \"complaint\": \"Cardiology check-up\",\n  \"outpatient\": {\n    \"id\": \"{{outpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{physicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - update (404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/update/00000000-0000-0000-0000-000000000000",
+            "description": "A2: 404 \"The consultation with that id does not exist\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-11-12\",\n  \"complaint\": \"x\",\n  \"outpatient\": {\n    \"id\": \"{{outpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{physicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - delete",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/delete/{{newConsultationId}}",
+            "description": "A2: 200 \"Consultation deleted successfully\". Run \"A2\" and \"A2 - get all\" first."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - delete (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/delete/00000000-0000-0000-0000-000000000000",
+            "description": "A2: 404 \"The consultation with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - medical fields get by id (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/medical-fields/00000000-0000-0000-0000-000000000000",
+            "description": "A2 pattern on another entity: 404 \"The medical field with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - consulting rooms get all",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consulting-rooms/all",
+            "description": "A2: 200 with the four rooms."
+          },
+          "response": []
+        },
+        {
+          "name": "A2 - outpatients get by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/{{outpatientId}}",
+            "description": "A2: 200 with Grace Uwase."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "physicianId",
+      "value": "527a5418-aa16-44b2-a97d-2cd4af71577b"
+    },
+    {
+      "key": "otherPhysicianId",
+      "value": "36c8f7ff-e36e-4b18-988a-86aaebfd1c5c"
+    },
+    {
+      "key": "outpatientId",
+      "value": "f9493e00-367a-4d76-99f6-604c5c1e893c"
+    },
+    {
+      "key": "otherOutpatientId",
+      "value": "8dca2b55-f6ea-491f-ad6f-b9b1dcaab55f"
+    },
+    {
+      "key": "nationalId",
+      "value": "1199880012345678"
+    },
+    {
+      "key": "medicalFieldId",
+      "value": "e8228661-8186-4833-bb1b-733377f23adc"
+    },
+    {
+      "key": "unusedMedicalFieldId",
+      "value": "99303c93-b8ac-41a9-acc1-9a8cba47c9d3"
+    },
+    {
+      "key": "consultingRoomId",
+      "value": "a9e3c9fa-26eb-40f3-a8d6-a749132020a9"
+    },
+    {
+      "key": "bookedConsultationId",
+      "value": "adcd2e77-d276-4f99-bd0a-0cfc4917829f"
+    },
+    {
+      "key": "attendedConsultationId",
+      "value": "c5855802-dc69-400b-9d19-0ca8f4f3bcd4"
+    },
+    {
+      "key": "newConsultationId",
+      "value": ""
+    }
+  ]
+}
