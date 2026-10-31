@@ -1052,6 +1052,52 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Bonus",
+      "description": "The two bonus requirements (+5 each). Neither changes any data.",
+      "item": [
+        {
+          "name": "Bonus 1 - dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/dashboard/summary",
+            "description": "Bonus 1: DashboardService builds a LinkedHashMap<String, Long> with count(), the derived countBy methods and the C2 query. With the seed data: {\"outpatients\":5,\"physicians\":3,\"freeRooms\":1,\"consultationsToday\":0,\"booked\":4,\"labTests\":6}."
+          },
+          "response": []
+        },
+        {
+          "name": "Bonus 2 - consultations page by page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/page?page=0&size=5&sort=consultDate,desc",
+            "description": "Bonus 2: the controller builds the Pageable from page, size and sort. Five newest consultations; totalElements 10 and totalPages 2 are at the end of the JSON."
+          },
+          "response": []
+        },
+        {
+          "name": "Bonus 2 - second page",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/page?page=1&size=5&sort=consultDate,desc",
+            "description": "Bonus 2: the other five consultations."
+          },
+          "response": []
+        },
+        {
+          "name": "Bonus 2 - oldest first",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/page?page=0&size=5&sort=consultDate,asc",
+            "description": "Bonus 2: the same page sorted ascending."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
