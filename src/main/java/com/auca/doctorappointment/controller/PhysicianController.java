@@ -62,6 +62,20 @@ public class PhysicianController {
         }
     }
 
+    // D3: PUT /api/physicians/{physicianId}/medical-fields/{medicalFieldId}
+    @PutMapping("/{physicianId}/medical-fields/{medicalFieldId}")
+    public ResponseEntity<?> addMedicalField(@PathVariable UUID physicianId, @PathVariable UUID medicalFieldId) {
+        String message = physicianService.addMedicalField(physicianId, medicalFieldId);
+        if (message.equals("The physician with that id does not exist")
+                || message.equals("That medical field does not exist")) {
+            return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("The physician already has that medical field")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
+        } else {
+            return new ResponseEntity<>(message, HttpStatus.OK);
+        }
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable UUID id) {
         String message = physicianService.delete(id);

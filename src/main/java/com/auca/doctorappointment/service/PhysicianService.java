@@ -8,6 +8,7 @@ import com.auca.doctorappointment.repository.MedicalFieldRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +66,26 @@ public class PhysicianService {
         physician.get().setLicenceNumber(newData.getLicenceNumber());
         physicianRepository.save(physician.get());
         return "Physician updated successfully";
+    }
+
+    // D3: add one medical field and keep the ones already there; Physician owns the link, so we save the physician
+    @Transactional
+    public String addMedicalField(UUID physicianId, UUID medicalFieldId) {
+        Optional<Physician> physician = physicianRepository.findById(physicianId);
+        if (physician.isEmpty()) {
+            return "The physician with that id does not exist";
+        }
+        Optional<MedicalField> medicalField = medicalFieldRepository.findById(medicalFieldId);
+        if (medicalField.isEmpty()) {
+            return "That medical field does not exist";
+        }
+        if (physician.get().getMedicalFields().contains(medicalField.get())) {
+            return "The physician already has that medical field";
+        }
+
+        physician.get().getMedicalFields().add(medicalField.get());
+        physicianRepository.save(physician.get());
+        return "Medical field added to the physician";
     }
 
     public String delete(UUID id) {
