@@ -57,6 +57,50 @@ Entities are used directly as request and response bodies (no DTOs). Every id is
 To build a jar instead: `./mvnw package -DskipTests`, then
 `java -jar target/doctor-appointment-management-system-0.0.1-SNAPSHOT.jar`.
 
+## Endpoints
+
+All paths start with `http://localhost:8080/api`.
+
+### Part A — CRUD (A2)
+
+The same five endpoints exist for `medical-fields`, `consulting-rooms`, `physicians`, `outpatients` and
+`consultations`:
+
+| Method | Path | Success | Error |
+|---|---|---|---|
+| POST | `/{path}/save` | 201 `Consultation saved successfully` | 404 when a referenced id does not exist |
+| GET | `/{path}/all` | 200 list | — |
+| GET | `/{path}/{id}` | 200 entity | 404 `The consultation with that id does not exist` |
+| PUT | `/{path}/update/{id}` | 200 `Consultation updated successfully` | 404 |
+| DELETE | `/{path}/delete/{id}` | 200 `Consultation deleted successfully` | 404 |
+
+(The messages follow the same pattern for every entity: `Medical field saved successfully`,
+`The physician with that id does not exist`, ...)
+
+### Parts B to F and the bonus
+
+| ID | Method and path | Success | Errors | Query type |
+|---|---|---|---|---|
+| B1 | GET `/outpatients/by-last-name?lastName=uwase` | 200 list (empty when nobody matches) | — | Derived: `findByLastNameIgnoreCaseOrderByFirstNameAsc` |
+| B2 | GET `/consultations/by-status?status=BOOKED` | 200 list, earliest first | 400 when the status is not an enum value | Derived: `findByStatusOrderByConsultDateAsc` |
+| B3 | GET `/consultations/between?start=2026-10-01&end=2026-10-31` | 200 list, both dates included | — | Derived: `findByConsultDateBetweenOrderByConsultDateAsc` |
+| C1 | GET `/physicians/by-medical-field?name=cardiology` | 200 list | — | JPQL: `JOIN p.medicalFields`, `LOWER` |
+| C2 | GET `/consulting-rooms/free` | 200 list sorted by roomNumber | — | JPQL: `NOT EXISTS` subquery |
+| C3 | GET `/medical-fields/unused` | 200 list | — | JPQL: `IS EMPTY` |
+| C4 | GET `/outpatients/of-physician/{physicianId}` | 200 list, each outpatient once | 404 `The physician with that id does not exist` | JPQL: `DISTINCT`, path navigation |
+| D1 | POST `/consultations/save` | 201, always saved as `BOOKED` | 400 `Consultation date cannot be in the past`; 409 `Physician is already booked on that date` | `isBefore(LocalDate.now())` + derived `existsByPhysicianAndConsultDateAndStatusNot` |
+| D2 | PATCH `/consultations/{id}/status?status=CHECKED_IN` | 200 `Consultation status updated successfully` | 400 `Cannot change status from X to Y`; 404 | Enum comparison with `==`; the PUT update no longer changes the status |
+| D3 | PUT `/physicians/{physicianId}/medical-fields/{medicalFieldId}` | 200 `Medical field added to the physician` | 404 `The physician with that id does not exist` / `That medical field does not exist`; 409 `The physician already has that medical field` | List `contains` + `add`, save the owner (Physician) |
+| D4 | PATCH `/physicians/{physicianId}/consulting-room?roomNumber=204` | 200 `Consulting room changed successfully` | 404 `The physician with that id does not exist` / `The consulting room with that roomNumber does not exist`; 409 `That consulting room is taken by another physician` | Derived: `findByRoomNumber`, `existsByConsultingRoom` |
+| E1 | POST `/lab-tests/save?consultationId=...` | 201 `Lab test saved successfully` | 404 `The consultation with that id does not exist`; 400 `Lab tests are only for ATTENDED consultations` | New entity, `@ManyToOne` |
+| E2 | GET `/lab-tests/outpatient/{nationalId}` | 200 list, newest orderedDate first | — | JPQL: `d.consultation.outpatient.nationalId`, `ORDER BY` |
+| E3 | DELETE `/lab-tests/delete/{id}` | 200 `Lab test deleted successfully` | 404 `The lab test with that id does not exist` | CRUD |
+| E3 | DELETE `/consultations/delete/{id}` | 200 | 409 `That consultation has lab tests, delete them first` | Derived: `existsByConsultation` |
+| F1 | GET `/consultations/stats/by-status` | 200 `[["BOOKED",4],["ATTENDED",3],...]` | — | JPQL: `GROUP BY`, `COUNT` |
+| F2 | PATCH `/consultations/cancel-day?physicianId=...&date=2026-10-20` | 200 `3 consultations cancelled` (the real number) | — | JPQL: `UPDATE` with `@Modifying`, `@Transactional` |
+| Bonus | GET `/dashboard/summary` | 200 `{"outpatients":5,"physicians":3,"freeRooms":1,...}` | — | `count()`, derived `countBy`, reuses C2 |
+| Bonus | GET `/consultations/page?page=0&size=5&sort=consultDate,desc` | 200 `Page<Consultation>` with `totalPages` and `totalElements` | — | `Pageable` built in the controller |
+
 ## Seed data (Step 0)
 
 The data below was entered through the API's own `save` endpoints, before the Part D rules existed
