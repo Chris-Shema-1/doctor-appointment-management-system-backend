@@ -27,15 +27,25 @@ public class ConsultationService {
     @Autowired
     private PhysicianRepository physicianRepository;
 
-    // body: {"consultDate":"2026-11-05", "status":"BOOKED", "complaint":..., "outpatient":{"id":"..."}, "physician":{"id":"..."}}
+    // body: {"consultDate":"2026-11-05", "complaint":..., "outpatient":{"id":"..."}, "physician":{"id":"..."}}
     public String save(Consultation consultation) {
         String problem = loadOutpatientAndPhysician(consultation, consultation);
         if (problem != null) {
             return problem;
         }
-        if (consultation.getStatus() == null) {
-            consultation.setStatus(ConsultationStatus.BOOKED);
+
+        // D1: no consultations in the past
+        if (consultation.getConsultDate().isBefore(LocalDate.now())) {
+            return "Consultation date cannot be in the past";
         }
+        // D1: the physician must not already have a non-cancelled consultation that day
+        if (consultationRepository.existsByPhysicianAndConsultDateAndStatusNot(
+                consultation.getPhysician(), consultation.getConsultDate(), ConsultationStatus.CANCELLED)) {
+            return "Physician is already booked on that date";
+        }
+
+        // D1: a new consultation always starts as BOOKED, whatever status the JSON body contains
+        consultation.setStatus(ConsultationStatus.BOOKED);
         consultation.setId(null);
         consultationRepository.save(consultation);
         return "Consultation saved successfully";

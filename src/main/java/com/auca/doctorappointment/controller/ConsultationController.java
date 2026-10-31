@@ -26,6 +26,10 @@ public class ConsultationController {
         if (message.equals("The outpatient with that id does not exist")
                 || message.equals("The physician with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("Consultation date cannot be in the past")) {
+            return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+        } else if (message.equals("Physician is already booked on that date")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.CREATED);
         }

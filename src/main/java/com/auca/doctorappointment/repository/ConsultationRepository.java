@@ -2,6 +2,7 @@ package com.auca.doctorappointment.repository;
 
 import com.auca.doctorappointment.entity.Consultation;
 import com.auca.doctorappointment.entity.ConsultationStatus;
+import com.auca.doctorappointment.entity.Physician;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +18,8 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
 
     // B3: consultations between two dates (Between includes both ends), ordered by consultDate
     List<Consultation> findByConsultDateBetweenOrderByConsultDateAsc(LocalDate start, LocalDate end);
+
+    // D1: does the physician already have a consultation on that date whose status is not the given one (CANCELLED)?
+    boolean existsByPhysicianAndConsultDateAndStatusNot(Physician physician, LocalDate consultDate,
+            ConsultationStatus status);
 }
