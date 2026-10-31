@@ -482,6 +482,324 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Part D - business rules",
+      "description": "Run top to bottom: D1 creates a test consultation that D2 then moves through its statuses and finally deletes; D3 and D4 end with a request that puts the seed data back, so the folder can be run again.",
+      "item": [
+        {
+          "name": "D1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "D1: 201 \"Consultation saved successfully\". The body says ATTENDED, but a new consultation always starts as BOOKED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-12-15\",\n  \"status\": \"ATTENDED\",\n  \"complaint\": \"Postman D1 test\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{otherPhysicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "D1 - date in the past (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "D1: consultDate.isBefore(LocalDate.now()) -> 400 \"Consultation date cannot be in the past\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-10-20\",\n  \"complaint\": \"past\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{physicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "D1 - physician already booked (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/save",
+            "description": "D1: existsByPhysicianAndConsultDateAndStatusNot(..., CANCELLED). Mugisha already has a BOOKED consultation on 2026-11-05 -> 409 \"Physician is already booked on that date\".",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-11-05\",\n  \"complaint\": \"double booking\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{physicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "D1 - check it was saved as BOOKED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/by-status?status=BOOKED",
+            "description": "D1: the test consultation is in the BOOKED list. The test script stores its id in newConsultationId for D2."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const made = pm.response.json().find(c => c.complaint === 'Postman D1 test');",
+                  "if (made) { pm.collectionVariables.set('newConsultationId', made.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{newConsultationId}}/status?status=CHECKED_IN",
+            "description": "D2: BOOKED -> CHECKED_IN is allowed: 200 \"Consultation status updated successfully\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - going back (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{newConsultationId}}/status?status=BOOKED",
+            "description": "D2: 400 \"Cannot change status from CHECKED_IN to BOOKED\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - CHECKED_IN to ATTENDED",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{newConsultationId}}/status?status=ATTENDED",
+            "description": "D2: allowed: 200."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - final status (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{newConsultationId}}/status?status=BOOKED",
+            "description": "D2: ATTENDED is final: 400 \"Cannot change status from ATTENDED to BOOKED\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - consultation does not exist (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/00000000-0000-0000-0000-000000000000/status?status=CHECKED_IN",
+            "description": "D2: 404 \"The consultation with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - PUT update does not change the status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/consultations/update/{{newConsultationId}}",
+            "description": "D2: the body says CANCELLED; the update returns 200 but the status stays ATTENDED (see the next request). Status only changes through PATCH /{id}/status.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consultDate\": \"2026-12-15\",\n  \"status\": \"CANCELLED\",\n  \"complaint\": \"Postman D1 test\",\n  \"outpatient\": {\n    \"id\": \"{{otherOutpatientId}}\"\n  },\n  \"physician\": {\n    \"id\": \"{{otherPhysicianId}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - check the status is still ATTENDED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/{{newConsultationId}}",
+            "description": "D2: status is ATTENDED."
+          },
+          "response": []
+        },
+        {
+          "name": "D2 - clean up the test consultation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/delete/{{newConsultationId}}",
+            "description": "Removes the consultation made by D1: 200 \"Consultation deleted successfully\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D3",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{otherPhysicianId}}/medical-fields/{{medicalFieldId}}",
+            "description": "D3: adds Cardiology to Eric Habimana and keeps Pediatrics: 200 \"Medical field added to the physician\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D3 - already has it (409)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{otherPhysicianId}}/medical-fields/{{medicalFieldId}}",
+            "description": "D3: 409 \"The physician already has that medical field\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D3 - physician does not exist (404)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/00000000-0000-0000-0000-000000000000/medical-fields/{{medicalFieldId}}",
+            "description": "D3: 404 \"The physician with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D3 - medical field does not exist (404)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{otherPhysicianId}}/medical-fields/00000000-0000-0000-0000-000000000000",
+            "description": "D3: 404 \"That medical field does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D3 - restore Habimana to Pediatrics only",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/physicians/update/{{otherPhysicianId}}",
+            "description": "Puts the seed data back (Habimana holds exactly one medical field).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Eric\",\n  \"lastName\": \"Habimana\",\n  \"licenceNumber\": \"RMDC-1003\",\n  \"consultingRoom\": {\n    \"id\": \"{{otherPhysicianRoomId}}\"\n  },\n  \"medicalFields\": [\n    {\n      \"id\": \"{{pediatricsId}}\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "D4",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{physicianId}}/consulting-room?roomNumber=204",
+            "description": "D4: findByRoomNumber + existsByConsultingRoom. Moves Jean Mugisha from 201 to 204: 200 \"Consulting room changed successfully\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D4 - old room is now free (C2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consulting-rooms/free",
+            "description": "D4: C2 now returns room 201 instead of 204."
+          },
+          "response": []
+        },
+        {
+          "name": "D4 - room taken (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{otherPhysicianId}}/consulting-room?roomNumber=202",
+            "description": "D4: room 202 belongs to Alice Uwimana: 409 \"That consulting room is taken by another physician\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D4 - room does not exist (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{physicianId}}/consulting-room?roomNumber=999",
+            "description": "D4: 404 \"The consulting room with that roomNumber does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D4 - physician does not exist (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/00000000-0000-0000-0000-000000000000/consulting-room?roomNumber=204",
+            "description": "D4: 404 \"The physician with that id does not exist\"."
+          },
+          "response": []
+        },
+        {
+          "name": "D4 - move Mugisha back to 201",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/{{physicianId}}/consulting-room?roomNumber=201",
+            "description": "Puts the seed data back; C2 returns room 204 again."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -514,12 +832,20 @@
       "value": "e8228661-8186-4833-bb1b-733377f23adc"
     },
     {
+      "key": "pediatricsId",
+      "value": "4274e6ef-e481-4e1f-bfa6-f34f68795989"
+    },
+    {
       "key": "unusedMedicalFieldId",
       "value": "99303c93-b8ac-41a9-acc1-9a8cba47c9d3"
     },
     {
       "key": "consultingRoomId",
       "value": "a9e3c9fa-26eb-40f3-a8d6-a749132020a9"
+    },
+    {
+      "key": "otherPhysicianRoomId",
+      "value": "34de0fd9-3e9f-4a7f-b1ea-09a6c9109584"
     },
     {
       "key": "bookedConsultationId",
