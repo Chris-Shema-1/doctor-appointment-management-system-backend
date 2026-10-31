@@ -1098,6 +1098,52 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Extra - safe deletes",
+      "description": "Not asked by the paper: deleting a row that other rows still point at returns 409 with a clear message instead of a 500 error. Every request here is refused, so none of them changes any data.",
+      "item": [
+        {
+          "name": "Delete a medical field a physician holds (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/medical-fields/delete/{{medicalFieldId}}",
+            "description": "Cardiology is held by Jean Mugisha: 409 \"That medical field is held by a physician, remove it from the physician first\"."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a consulting room a physician uses (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/consulting-rooms/delete/{{consultingRoomId}}",
+            "description": "Room 201 is Jean Mugisha's (checked with existsByConsultingRoom, from D4): 409 \"That consulting room is taken by a physician, move the physician first\"."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a physician who has consultations (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/physicians/delete/{{physicianId}}",
+            "description": "existsByPhysician: 409 \"That physician has consultations, delete them first\"."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete an outpatient who has consultations (409)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/delete/{{outpatientId}}",
+            "description": "existsByOutpatient: 409 \"That outpatient has consultations, delete them first\"."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
