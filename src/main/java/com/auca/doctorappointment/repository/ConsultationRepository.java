@@ -4,7 +4,9 @@ import com.auca.doctorappointment.entity.Consultation;
 import com.auca.doctorappointment.entity.ConsultationStatus;
 import com.auca.doctorappointment.entity.Physician;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -27,4 +29,15 @@ public interface ConsultationRepository extends JpaRepository<Consultation, UUID
     // F1: one row per status with its count, e.g. ["BOOKED", 4]; a status with no consultations has no group, so no row
     @Query("SELECT c.status, COUNT(c) FROM Consultation c GROUP BY c.status")
     List<Object[]> countPerStatus();
+
+    // F2: one UPDATE for the whole day, no Java loop; ATTENDED ones are kept, and already CANCELLED ones are
+    // left out so the returned int is the number of consultations this call really cancelled
+    @Modifying
+    @Query("""
+            UPDATE Consultation c SET c.status = com.auca.doctorappointment.entity.ConsultationStatus.CANCELLED
+            WHERE c.physician.id = :physicianId AND c.consultDate = :date
+            AND c.status <> com.auca.doctorappointment.entity.ConsultationStatus.ATTENDED
+            AND c.status <> com.auca.doctorappointment.entity.ConsultationStatus.CANCELLED
+            """)
+    int cancelDay(@Param("physicianId") UUID physicianId, @Param("date") LocalDate date);
 }

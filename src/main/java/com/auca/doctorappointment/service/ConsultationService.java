@@ -10,6 +10,7 @@ import com.auca.doctorappointment.repository.OutpatientRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -77,6 +78,13 @@ public class ConsultationService {
     // F1
     public List<Object[]> getStatsByStatus() {
         return consultationRepository.countPerStatus();
+    }
+
+    // F2: physician is absent; UPDATE queries need @Transactional on the service method
+    @Transactional
+    public String cancelDay(UUID physicianId, LocalDate date) {
+        int count = consultationRepository.cancelDay(physicianId, date);
+        return count + " consultations cancelled";
     }
 
     // D2: BOOKED -> CHECKED_IN or CANCELLED, CHECKED_IN -> ATTENDED or CANCELLED; ATTENDED and CANCELLED are final

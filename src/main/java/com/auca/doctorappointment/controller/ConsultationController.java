@@ -59,6 +59,12 @@ public class ConsultationController {
         return new ResponseEntity<>(consultationService.getStatsByStatus(), HttpStatus.OK);
     }
 
+    // F2: PATCH /api/consultations/cancel-day?physicianId=...&date=2026-10-20
+    @PatchMapping("/cancel-day")
+    public ResponseEntity<?> cancelDay(@RequestParam UUID physicianId, @RequestParam String date) {
+        return new ResponseEntity<>(consultationService.cancelDay(physicianId, LocalDate.parse(date)), HttpStatus.OK);
+    }
+
     // D2: PATCH /api/consultations/{id}/status?status=CHECKED_IN
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> changeStatus(@PathVariable UUID id, @RequestParam ConsultationStatus status) {
