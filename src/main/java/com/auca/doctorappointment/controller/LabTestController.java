@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,5 +28,11 @@ public class LabTestController {
         } else {
             return new ResponseEntity<>(message, HttpStatus.CREATED);
         }
+    }
+
+    // E2: GET /api/lab-tests/outpatient/{nationalId}
+    @GetMapping("/outpatient/{nationalId}")
+    public ResponseEntity<List<LabTest>> getByOutpatient(@PathVariable String nationalId) {
+        return new ResponseEntity<>(labTestService.getByOutpatient(nationalId), HttpStatus.OK);
     }
 }

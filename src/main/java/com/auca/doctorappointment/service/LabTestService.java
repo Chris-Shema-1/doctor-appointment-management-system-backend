@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,5 +38,10 @@ public class LabTestService {
         labTest.setConsultation(consultation.get());
         labTestRepository.save(labTest);
         return "Lab test saved successfully";
+    }
+
+    // E2: empty list when the outpatient has no lab tests
+    public List<LabTest> getByOutpatient(String nationalId) {
+        return labTestRepository.findByOutpatientNationalId(nationalId);
     }
 }
