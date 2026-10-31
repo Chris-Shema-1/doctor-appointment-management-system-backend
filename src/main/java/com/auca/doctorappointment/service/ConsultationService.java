@@ -5,6 +5,7 @@ import com.auca.doctorappointment.entity.ConsultationStatus;
 import com.auca.doctorappointment.entity.Outpatient;
 import com.auca.doctorappointment.entity.Physician;
 import com.auca.doctorappointment.repository.ConsultationRepository;
+import com.auca.doctorappointment.repository.LabTestRepository;
 import com.auca.doctorappointment.repository.OutpatientRepository;
 import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class ConsultationService {
 
     @Autowired
     private PhysicianRepository physicianRepository;
+
+    @Autowired
+    private LabTestRepository labTestRepository;
 
     // body: {"consultDate":"2026-11-05", "complaint":..., "outpatient":{"id":"..."}, "physician":{"id":"..."}}
     public String save(Consultation consultation) {
@@ -112,6 +116,10 @@ public class ConsultationService {
         Optional<Consultation> consultation = consultationRepository.findById(id);
         if (consultation.isEmpty()) {
             return "The consultation with that id does not exist";
+        }
+        // E3: a consultation that has lab tests can no longer be deleted
+        if (labTestRepository.existsByConsultation(consultation.get())) {
+            return "That consultation has lab tests, delete them first";
         }
         consultationRepository.delete(consultation.get());
         return "Consultation deleted successfully";

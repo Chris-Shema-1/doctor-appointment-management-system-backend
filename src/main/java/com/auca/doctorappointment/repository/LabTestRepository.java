@@ -1,5 +1,6 @@
 package com.auca.doctorappointment.repository;
 
+import com.auca.doctorappointment.entity.Consultation;
 import com.auca.doctorappointment.entity.LabTest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,7 @@ public interface LabTestRepository extends JpaRepository<LabTest, UUID> {
     // consultation and outpatient are single-valued, so we navigate with dots (no JOIN)
     @Query("SELECT d FROM LabTest d WHERE d.consultation.outpatient.nationalId = :nationalId ORDER BY d.orderedDate DESC")
     List<LabTest> findByOutpatientNationalId(@Param("nationalId") String nationalId);
+
+    // E3: does this consultation have at least one lab test?
+    boolean existsByConsultation(Consultation consultation);
 }

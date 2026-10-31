@@ -93,6 +93,8 @@ public class ConsultationController {
         String message = consultationService.delete(id);
         if (message.equals("The consultation with that id does not exist")) {
             return new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+        } else if (message.equals("That consultation has lab tests, delete them first")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
         } else {
             return new ResponseEntity<>(message, HttpStatus.OK);
         }
