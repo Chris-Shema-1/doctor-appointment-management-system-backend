@@ -1,12 +1,14 @@
 package com.auca.doctorappointment.controller;
 
 import com.auca.doctorappointment.entity.Consultation;
+import com.auca.doctorappointment.entity.ConsultationStatus;
 import com.auca.doctorappointment.service.ConsultationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,6 +34,19 @@ public class ConsultationController {
     @GetMapping("/all")
     public ResponseEntity<List<Consultation>> getAll() {
         return new ResponseEntity<>(consultationService.getAll(), HttpStatus.OK);
+    }
+
+    // B2: GET /api/consultations/by-status?status=BOOKED
+    @GetMapping("/by-status")
+    public ResponseEntity<List<Consultation>> getByStatus(@RequestParam ConsultationStatus status) {
+        return new ResponseEntity<>(consultationService.getByStatus(status), HttpStatus.OK);
+    }
+
+    // B3: GET /api/consultations/between?start=2026-10-01&end=2026-10-31
+    @GetMapping("/between")
+    public ResponseEntity<List<Consultation>> getBetween(@RequestParam String start, @RequestParam String end) {
+        return new ResponseEntity<>(consultationService.getBetween(LocalDate.parse(start), LocalDate.parse(end)),
+                HttpStatus.OK);
     }
 
     @GetMapping("/{id}")

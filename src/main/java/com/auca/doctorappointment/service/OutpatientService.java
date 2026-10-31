@@ -30,6 +30,11 @@ public class OutpatientService {
         return outpatientRepository.findById(id);
     }
 
+    // B1: empty list when nobody matches
+    public List<Outpatient> getByLastName(String lastName) {
+        return outpatientRepository.findByLastNameIgnoreCaseOrderByFirstNameAsc(lastName);
+    }
+
     public String update(UUID id, Outpatient newData) {
         Optional<Outpatient> outpatient = outpatientRepository.findById(id);
         if (outpatient.isEmpty()) {

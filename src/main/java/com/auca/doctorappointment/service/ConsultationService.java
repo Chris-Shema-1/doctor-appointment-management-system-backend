@@ -10,6 +10,7 @@ import com.auca.doctorappointment.repository.PhysicianRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +48,16 @@ public class ConsultationService {
     // Optional.empty() means the consultation does not exist
     public Optional<Consultation> getById(UUID id) {
         return consultationRepository.findById(id);
+    }
+
+    // B2
+    public List<Consultation> getByStatus(ConsultationStatus status) {
+        return consultationRepository.findByStatusOrderByConsultDateAsc(status);
+    }
+
+    // B3: the controller has already turned the Strings into LocalDate
+    public List<Consultation> getBetween(LocalDate start, LocalDate end) {
+        return consultationRepository.findByConsultDateBetweenOrderByConsultDateAsc(start, end);
     }
 
     public String update(UUID id, Consultation newData) {

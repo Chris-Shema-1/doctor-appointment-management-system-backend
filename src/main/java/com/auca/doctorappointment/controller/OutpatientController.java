@@ -28,6 +28,12 @@ public class OutpatientController {
         return new ResponseEntity<>(outpatientService.getAll(), HttpStatus.OK);
     }
 
+    // B1: GET /api/outpatients/by-last-name?lastName=uwase
+    @GetMapping("/by-last-name")
+    public ResponseEntity<List<Outpatient>> getByLastName(@RequestParam String lastName) {
+        return new ResponseEntity<>(outpatientService.getByLastName(lastName), HttpStatus.OK);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
         Optional<Outpatient> outpatient = outpatientService.getById(id);
