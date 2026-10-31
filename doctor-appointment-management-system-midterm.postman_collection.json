@@ -320,6 +320,92 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Part B - derived queries",
+      "description": "B1 to B3, all solved by method name only (no @Query).",
+      "item": [
+        {
+          "name": "B1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/by-last-name?lastName=uwase",
+            "description": "B1: findByLastNameIgnoreCaseOrderByFirstNameAsc. Diane Uwase then Grace Uwase (firstName A to Z)."
+          },
+          "response": []
+        },
+        {
+          "name": "B1 - other letter case",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/by-last-name?lastName=UWASE",
+            "description": "B1: same two outpatients; letter case does not matter."
+          },
+          "response": []
+        },
+        {
+          "name": "B1 - nobody matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/outpatients/by-last-name?lastName=nobody",
+            "description": "B1: 200 with an empty list []."
+          },
+          "response": []
+        },
+        {
+          "name": "B2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/by-status?status=BOOKED",
+            "description": "B2: findByStatusOrderByConsultDateAsc. The BOOKED consultations, earliest consultDate first."
+          },
+          "response": []
+        },
+        {
+          "name": "B2 - ATTENDED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/by-status?status=ATTENDED",
+            "description": "B2: the three ATTENDED consultations, earliest first."
+          },
+          "response": []
+        },
+        {
+          "name": "B2 - not a status (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/by-status?status=DONE",
+            "description": "B2: the parameter is the ConsultationStatus enum, so an unknown value is rejected by Spring with 400."
+          },
+          "response": []
+        },
+        {
+          "name": "B3",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/between?start=2026-10-01&end=2026-10-31",
+            "description": "B3: findByConsultDateBetweenOrderByConsultDateAsc. The six October consultations in date order; the controller parses the Strings with LocalDate.parse."
+          },
+          "response": []
+        },
+        {
+          "name": "B3 - one day, both ends included",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/consultations/between?start=2026-10-20&end=2026-10-20",
+            "description": "B3: both consultations of 2026-10-20, which shows Between includes both dates."
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
