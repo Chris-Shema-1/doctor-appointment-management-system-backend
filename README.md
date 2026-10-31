@@ -101,6 +101,19 @@ The same five endpoints exist for `medical-fields`, `consulting-rooms`, `physici
 | Bonus | GET `/dashboard/summary` | 200 `{"outpatients":5,"physicians":3,"freeRooms":1,...}` | — | `count()`, derived `countBy`, reuses C2 |
 | Bonus | GET `/consultations/page?page=0&size=5&sort=consultDate,desc` | 200 `Page<Consultation>` with `totalPages` and `totalElements` | — | `Pageable` built in the controller |
 
+### Extra: safe deletes
+
+Not asked by the paper. A row that other rows still point at cannot be deleted; instead of a 500 error
+from the database, the delete endpoint answers 409 with a message that says what to do first:
+
+| Delete | Refused when | 409 message |
+|---|---|---|
+| `/consultations/delete/{id}` (E3) | the consultation has lab tests | `That consultation has lab tests, delete them first` |
+| `/medical-fields/delete/{id}` | a physician holds the medical field | `That medical field is held by a physician, remove it from the physician first` |
+| `/consulting-rooms/delete/{id}` | a physician sits in the room | `That consulting room is taken by a physician, move the physician first` |
+| `/physicians/delete/{id}` | the physician has consultations | `That physician has consultations, delete them first` |
+| `/outpatients/delete/{id}` | the outpatient has consultations | `That outpatient has consultations, delete them first` |
+
 ## Seed data (Step 0)
 
 The data below was entered through the API's own `save` endpoints, before the Part D rules existed
